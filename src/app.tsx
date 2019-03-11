@@ -40,11 +40,11 @@ class App extends Component {
       },
     },
     window: {
-      backgroundTextStyle: 'light',
-      navigationBarBackgroundColor: '#fff',
+      backgroundTextStyle: 'dark',
+      navigationBarBackgroundColor: '#f1e5c9',
       navigationBarTitleText: 'bible',
       navigationBarTextStyle: 'black',
-      backgroundColor: '#f6f7f8',
+      backgroundColor: '#f1e5c9',
     },
   }
 

@@ -1,3 +1,4 @@
+@import "./custom-theme.scss";
 @import "~taro-ui/dist/style/components/drawer.scss";
 @import "~taro-ui/dist/style/components/list.scss";
 @import "~taro-ui/dist/style/components/grid.scss";
@@ -7,5 +8,19 @@
 @import "~taro-ui/dist/style/components/tab-bar.scss";
 @import "~taro-ui/dist/style/components/badge.scss";
 @import "~taro-ui/dist/style/components/message.scss";
+
 // @import '~taro-ui/dist/style/index.scss' // 全局引入一次即可
 // @import "~taro-ui/dist/style/index.scss"; // 引入组件样式 - 方式二
+
+page {
+  background-color: #f1e5c9;
+}
+
+.at-tabs__header {
+  background-color: #f1e5c9;
+}
+
+/* Custom Theme */
+// $color-brand: #e93b3d;
+// $color-brand-light: #ef6c6e;
+// $color-brand-dark: #ba2f31;

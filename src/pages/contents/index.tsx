@@ -75,14 +75,21 @@ class Index extends Component <any, any> {
     const classifys = [{ title: '旧约' }, { title: '新约' }]
     return (
       <View className='books-contents'>
-        <AtTabs current={this.state.classify} tabList={classifys} onClick={this.handleTabsClick.bind(this, 'classify')} />
+        <AtTabs
+          className={'at-tabs'}
+          current={this.state.classify}
+          tabList={classifys}
+          onClick={this.handleTabsClick.bind(this, 'classify')}
+        />
         { this.state.classify === 0 ?
           <AtGrid
+            className={'at-grid'}
             data={oldBiblesEn.map((item: any, index: number) => ({ value: oldBiblesCn[index].name + '\n' + item.name, length: item.length, index: index }))}
             onClick={this.handleClick.bind(this)}
           /> : 
           <AtGrid
-            data={newBiblesEn.map((item: any, index: number) => ({ value: newBiblesCn[index].name + '\n' + item.name, length: item.length, index: index }))}
+            className={'at-grid'}
+            data={newBiblesEn.map((item: any, index: number) => ({ value: newBiblesCn[index].name + '\n' + item.name, length: item.length, index: index + 39 }))}
             onClick={this.handleClick.bind(this)}
           />
         }
@@ -95,7 +102,7 @@ class Index extends Component <any, any> {
         >{
           <AtList>
             {
-              drawerList.map((item, index) => <AtListItem key={item} note={item} arrow='right' onClick={this.handleChapterClick.bind(this, index)} />)
+              drawerList.map((item, index) => <AtListItem key={item} note={item} onClick={this.handleChapterClick.bind(this, index)} />)
             }
           </AtList>
         }</AtDrawer>

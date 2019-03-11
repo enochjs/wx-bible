@@ -24,7 +24,6 @@ class Index extends Component <any, any>{
       chapter: 1,
       language: 0,
       isnull: false,
-      height: 0,
     }
   }
 
@@ -141,7 +140,7 @@ class Index extends Component <any, any>{
     return (
       <View className="book-detail">
         {
-          this.state.isnull ? '' : <View key={`bookNameEn${this.state.chapter}`} style={{ height: this.state.height }} className='at-article' onTouchStart={this.handleTouchStart} onTouchEnd={this.handleTouchEnd}>
+          this.state.isnull ? '' : <View key={`bookNameEn${this.state.chapter}`} className='at-article' onTouchStart={this.handleTouchStart} onTouchEnd={this.handleTouchEnd}>
             {
               articleEn.map((item: string, index: number) =>
                 <View key={bookNameEn + index.toString()} className='at-article__p'>
