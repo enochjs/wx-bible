@@ -2,9 +2,10 @@ import { ComponentType } from 'react'
 import Taro, { Component, Config } from '@tarojs/taro'
 import { View } from '@tarojs/components'
 import { observer, inject } from '@tarojs/mobx'
-import { AtDrawer, AtGrid, AtList, AtListItem } from 'taro-ui'
+import { AtDrawer, AtGrid, AtList, AtListItem, AtTabs } from 'taro-ui'
 
-import bibleContents from '../../contents'
+import contentsEn from '../../config/contentsEn'
+import contentsCn from '../../config/contentsCn'
 
 import './index.sass'
 
@@ -30,7 +31,8 @@ class Index extends Component <any, any> {
     this.state = {
       chapterLength: 10,
       visible: false,
-      book: '',
+      bookIndex: '',
+      classify: 0,
     }
   }
 
@@ -39,50 +41,51 @@ class Index extends Component <any, any> {
     navigationBarTitleText: 'holy bible'
   }
 
-  componentWillMount () { }
-
-  componentWillReact () {
-    console.log('componentWillReact')
-  }
-
   onClose = () => {
     this.setState({ visible: false })
   }
 
   handleClick = (item: any) => {
-    const book: any = bibleContents.find(i => i.name === item.value)
-    this.setState({ chapterLength: book.length, visible: true, book: item.value })
-
+    this.setState({ chapterLength: item.length, visible: true, bookIndex: item.index })
   }
 
-  handleChapterClick = (index) => {
+  handleChapterClick = (index: number) => {
     Taro.navigateTo({
-      url: `/pages/books/index?book=${this.state.book}&chapter=${index + 1}`
+      url: `/pages/books/index?bookIndex=${this.state.bookIndex}&chapter=${index + 1}`
     })
   }
 
+  handleTabsClick = (type: string, index: number) => {
+    this.setState({ [type]: index })
+  }
+
   render () {
-    const oldBibles = bibleContents.slice(0, 39)
-    const newBibles = bibleContents.slice(39)
+
+    const oldBiblesEn = contentsEn.slice(0, 39)
+    const newBiblesEn = contentsEn.slice(39)
+
+    const oldBiblesCn = contentsCn.slice(0, 39)
+    const newBiblesCn = contentsCn.slice(39)
 
     const drawerList: any[] = []
 
     for (let i = 0; i < this.state.chapterLength; i++) {
       drawerList.push(`chapter ${i + 1}`)
     }
-
+    const classifys = [{ title: '旧约' }, { title: '新约' }]
     return (
       <View className='books-contents'>
-        <View className="books-classify">OldTestament</View>
-        <AtGrid
-          data={oldBibles.map((item: any) => ({ value: item.name }))}
-          onClick={this.handleClick.bind(this)}
-        />
-        <View className="books-classify">NewTestament</View>
-        <AtGrid
-          data={newBibles.map((item: any) => ({ value: item.name, length: item.length }))}
-          onClick={this.handleClick.bind(this)}
-        />
+        <AtTabs current={this.state.classify} tabList={classifys} onClick={this.handleTabsClick.bind(this, 'classify')} />
+        { this.state.classify === 0 ?
+          <AtGrid
+            data={oldBiblesEn.map((item: any, index: number) => ({ value: oldBiblesCn[index].name + '\n' + item.name, length: item.length, index: index }))}
+            onClick={this.handleClick.bind(this)}
+          /> : 
+          <AtGrid
+            data={newBiblesEn.map((item: any, index: number) => ({ value: newBiblesCn[index].name + '\n' + item.name, length: item.length, index: index }))}
+            onClick={this.handleClick.bind(this)}
+          />
+        }
         <AtDrawer 
           className="books-chapter-drawer"
           show={this.state.visible} 
