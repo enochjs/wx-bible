@@ -116,7 +116,7 @@ class Index extends Component <any, any>{
       const length = contentsCn[this.$router.params.bookIndex || 0].length
       if (this.state.chapter === Number(length)) {
         Taro.atMessage({
-          message: this.state.language === 0 ? 'Already the last chapter!' : '已经是第一章了！',
+          message: this.state.language === 0 ? 'Already the last chapter!' : '已经是最后一章了！',
           type: 'warning',
           duration: 1000,
         })
