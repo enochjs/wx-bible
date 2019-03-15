@@ -74,6 +74,7 @@ class Index extends Component <any, any>{
         touchX: '',
         touchY: '',
       })
+      Taro.setNavigationBarTitle({ title: `chapter${chapter}` })
     })
   }
   
@@ -107,6 +108,7 @@ class Index extends Component <any, any>{
         return
       } 
       this.setState({ isnull: true }, () => {
+        Taro.setNavigationBarTitle({ title: `chapter${this.state.chapter - 1}` })
         this.setState({
           chapter: this.state.chapter - 1,
           isnull: false,
@@ -123,6 +125,7 @@ class Index extends Component <any, any>{
         return
       }
       this.setState({ isnull: true }, () => {
+        Taro.setNavigationBarTitle({ title: `chapter${this.state.chapter + 1}` })
         this.setState({
           chapter: this.state.chapter + 1,
           isnull: false,
