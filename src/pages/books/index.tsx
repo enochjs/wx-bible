@@ -1,7 +1,7 @@
 import { ComponentType } from 'react'
 
 import Taro, { Component, Config } from '@tarojs/taro'
-import { View, Text } from '@tarojs/components'
+import { View, Text, ScrollView } from '@tarojs/components'
 import { AtTabBar, AtMessage } from 'taro-ui'
 import { observer, inject } from '@tarojs/mobx'
 
@@ -97,73 +97,92 @@ class Index extends Component <any, any>{
     this.JudgeTouchData(x, y, this.state.touchX, this.state.touchY)
   }
 
+  goToPrePage = () => {
+    if (this.state.chapter === 1) {
+      Taro.atMessage({
+        message: this.state.language === 0 ? 'It is already the first chapter!' : '已经是第一章了！',
+        type: 'warning',
+        duration: 1000,
+      })
+      return
+    } 
+    this.setState({
+      chapter: this.state.chapter - 1,
+      isnull: false,
+    }, () => {
+      Taro.setNavigationBarTitle({ title: `chapter${this.state.chapter}` })
+    })
+  }
+
+  goToNextPage = () => {
+    const length = contentsCn[this.$router.params.bookIndex || 0].length
+    if (this.state.chapter === Number(length)) {
+      Taro.atMessage({
+        message: this.state.language === 0 ? 'Already the last chapter!' : '已经是最后一章了！',
+        type: 'warning',
+        duration: 1000,
+      })
+      return
+    }
+    this.setState({
+      chapter: this.state.chapter + 1,
+      isnull: false,
+    }, () => {
+      Taro.setNavigationBarTitle({ title: `chapter${this.state.chapter}` })
+    })
+  }
+
   JudgeTouchData = (endX, endY, startX, startY) => {
-    if (endX - startX > 50 && Math.abs(endY - startY) < 50) { //右滑
-      if (this.state.chapter === 1) {
-        Taro.atMessage({
-          message: this.state.language === 0 ? 'It is already the first chapter!' : '已经是第一章了！',
-          type: 'warning',
-          duration: 1000,
-        })
-        return
-      } 
-      this.setState({ isnull: true }, () => {
-        Taro.setNavigationBarTitle({ title: `chapter${this.state.chapter - 1}` })
-        this.setState({
-          chapter: this.state.chapter - 1,
-          isnull: false,
-        })
-      })
-    } else if (endX - startX < -50 && Math.abs(endY - startY) < 50) { //左滑
-      const length = contentsCn[this.$router.params.bookIndex || 0].length
-      if (this.state.chapter === Number(length)) {
-        Taro.atMessage({
-          message: this.state.language === 0 ? 'Already the last chapter!' : '已经是最后一章了！',
-          type: 'warning',
-          duration: 1000,
-        })
-        return
+    const widowWidth = Taro.getSystemInfoSync().windowWidth
+    if (Math.abs(endY - startY) < 50) {
+      if (startX < widowWidth / 2 && endX < widowWidth / 2) {
+        this.goToPrePage()
+      } else if (endX > widowWidth / 2 && startX > widowWidth / 2) {
+        this.goToNextPage()
       }
-      this.setState({ isnull: true }, () => {
-        Taro.setNavigationBarTitle({ title: `chapter${this.state.chapter + 1}` })
-        this.setState({
-          chapter: this.state.chapter + 1,
-          isnull: false,
-        })
-      })
     }
   }
 
   render () {
     const languages = [{ title: '英文' }, { title: '中文' }, { title: '中英' }]
     const bookNameCn = contentsCn[this.$router.params.bookIndex || 0].name
-    const articleCn = booksCn[bookNameCn] ? booksCn[bookNameCn][`${bookNameCn}-${this.state.chapter}`] : []
     const bookNameEn = contentsEn[this.$router.params.bookIndex || 0].name
-    const articleEn = booksEn[bookNameEn] ? booksEn[bookNameEn][`${bookNameEn}-${this.state.chapter}`] : []
+    const bookEn = booksEn[bookNameEn] || {}
+    const bookCn = booksCn[bookNameCn] || {}
     return (
       <View className="book-detail">
         {
-          this.state.isnull ? '' : <View key={`bookNameEn${this.state.chapter}`} className='at-article' onTouchStart={this.handleTouchStart} onTouchEnd={this.handleTouchEnd}>
-            {
-              articleEn.map((item: string, index: number) =>
-                <View key={bookNameEn + index.toString()} className='at-article__p'>
-                  {
-                    this.state.language !== 1?
-                      <View>
-                        <Text selectable={true} className="c-desc" >
-                          {item}
-                        </Text>
-                      </View> : null
-                  }
-                  {
-                    this.state.language !== 0 ?
-                      <Text selectable={true} className="c-desc" >
-                        {articleCn[index]}
-                      </Text> : null
-                  }
-                </View>)
-            }
-          </View>
+          Object.keys(bookEn).map((chapter, chapterIndex) => {
+            const show = chapterIndex + 1 === this.state.chapter
+            return (
+              <ScrollView
+                key={`bookNameEn${chapterIndex}`}
+                className={show ? 'at-article active' : ''}
+                onTouchStart={this.handleTouchStart}
+                onTouchEnd={this.handleTouchEnd}
+                scrollY
+              >
+                {
+                  show ? bookEn[`${bookNameEn}-${chapterIndex + 1}`].map((item: string, index: number) => {
+                    return <View key={bookNameEn + index.toString()} className='at-article__p'>
+                      {
+                        this.state.language !== 1?
+                          <Text selectable={true} className="c-desc" >
+                            {item}
+                          </Text>
+                          : null
+                      }
+                      {
+                        this.state.language !== 0 ?
+                          <Text selectable={true} className="c-desc" >
+                            {bookCn[`${bookNameCn}-${chapterIndex + 1}`][index]}
+                          </Text> : null
+                      }
+                  </View>}) : null
+                }
+              </ScrollView>
+            )
+          })
         }
         <AtMessage />
         <AtTabBar

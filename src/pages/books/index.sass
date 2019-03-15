@@ -1,6 +1,14 @@
 .book-detail {
   .at-article {
     padding-bottom: 100rpx;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    &.active {
+      z-index: 10;  
+    }
     .at-article__p {
       white-space: pre-wrap;
       word-break: keep-all;
