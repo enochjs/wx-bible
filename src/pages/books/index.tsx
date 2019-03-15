@@ -174,9 +174,11 @@ class Index extends Component <any, any>{
                       }
                       {
                         this.state.language !== 0 ?
-                          <Text selectable={true} className="c-desc" >
-                            {bookCn[`${bookNameCn}-${chapterIndex + 1}`][index]}
-                          </Text> : null
+                          <View>
+                            <Text selectable={true} className="c-desc" >
+                              {bookCn[`${bookNameCn}-${chapterIndex + 1}`][index]}
+                            </Text>
+                          </View>: null
                       }
                   </View>}) : null
                 }
