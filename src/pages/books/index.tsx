@@ -22,7 +22,7 @@ class Index extends Component <any, any>{
     this.state = {
       chapters: {},
       chapter: 1,
-      language: 0,
+      language: 1,
       isnull: false,
     }
   }
@@ -76,11 +76,14 @@ class Index extends Component <any, any>{
       })
       Taro.setNavigationBarTitle({ title: `chapter${chapter}` })
     })
+    const index = Taro.getStorageSync('language')
+    this.setState({ language: index !== undefined ? Number(index) : 1 })
   }
   
 
   handleTabsClick = (type: string, index: number) => {
     this.setState({ [type]: index })
+    Taro.setStorage({ key: 'language', data: index })
   }
 
   handleTouchStart = (e) => {
@@ -134,7 +137,7 @@ class Index extends Component <any, any>{
 
   JudgeTouchData = (endX, endY, startX, startY) => {
     const widowWidth = Taro.getSystemInfoSync().windowWidth
-    if (Math.abs(endY - startY) < 50) {
+    if (Math.abs(endY - startY) < 5) {
       if (startX < widowWidth / 2 && endX < widowWidth / 2) {
         this.goToPrePage()
       } else if (endX > widowWidth / 2 && startX > widowWidth / 2) {
