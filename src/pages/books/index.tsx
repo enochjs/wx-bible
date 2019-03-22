@@ -90,11 +90,16 @@ class Index extends Component <any, any>{
     this.setState({
       touchX: e.changedTouches[0].clientX,
       touchY: e.changedTouches[0].clientY,
+      startTime: new Date().getTime(),
     });
   }
 
 
   handleTouchEnd = (e) => {
+    const endTime = new Date().getTime()
+    if (endTime - this.state.startTime > 500) {
+      return
+    }
     let x = e.changedTouches[0].clientX;
     let y = e.changedTouches[0].clientY;
     this.JudgeTouchData(x, y, this.state.touchX, this.state.touchY)
@@ -137,7 +142,7 @@ class Index extends Component <any, any>{
 
   JudgeTouchData = (endX, endY, startX, startY) => {
     const widowWidth = Taro.getSystemInfoSync().windowWidth
-    if (Math.abs(endY - startY) < 5) {
+    if (Math.abs(endY - startY) < 5 && Math.abs(endX - startX) < 5) {
       if (startX < widowWidth / 2 && endX < widowWidth / 2) {
         this.goToPrePage()
       } else if (endX > widowWidth / 2 && startX > widowWidth / 2) {
