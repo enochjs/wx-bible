@@ -44,9 +44,13 @@ class Mp3Audio extends Component <any, any>{
         loading: true,
       })
       const language = Taro.getStorageSync('mp3') || 'cn'
-      const name = language === 'en' ? this.props.bookNameEn : this.props.bookNameCn
-      this.innerAudioContext.src = `https://enochjs.oss-cn-hangzhou.aliyuncs.com/mp3/${language}/${name}/${this.props.chapterIndex}.mp3`
-      console.log('url', `https://enochjs.oss-cn-hangzhou.aliyuncs.com/mp3/${language}/${name}/${this.props.chapterIndex}.mp3`)
+      const mp3 = language === 'en' ? 'mp3en' : 'mp3'
+      // const name = language === 'en' ? this.props.bookNameEn : this.props.bookNameCn
+      const name = this.props.bookNameCn
+      const chapterName = `${name}第${this.props.chapterIndex}章`
+      // this.innerAudioContext.src = `https://enochjs.oss-cn-hangzhou.aliyuncs.com/mp3/${language}/${name}/${this.props.chapterIndex}.mp3`
+      this.innerAudioContext.src = `http://jiaoxue.jidujiao.com/${mp3}/${name}/${chapterName}.mp3`
+      console.log('url', this.innerAudioContext.src)
       this.innerAudioContext.onPlay(() => {
         this.setState({ loading: false })
         this.sliderTime()
