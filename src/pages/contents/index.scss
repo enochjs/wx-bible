@@ -33,6 +33,9 @@
   .at-grid {
     margin-top: 40rpx;
   }
+  .mp3 {
+    background-color: #f1e5c9;
+  }
   .at-drawer__content {
     background-color: #f1e5c9;
     .at-list__item {
@@ -44,5 +47,8 @@
         color: #666;
       }
     }  
+  }
+  .hidden {
+    display: none;
   }
 }

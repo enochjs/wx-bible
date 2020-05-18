@@ -1,7 +1,6 @@
 import Taro, { Component, Config } from '@tarojs/taro'
 import { Provider } from '@tarojs/mobx'
 import Contents from './pages/contents'
-
 import counterStore from './store/counter'
 
 import './app.scss'

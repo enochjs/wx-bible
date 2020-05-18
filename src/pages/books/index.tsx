@@ -3,27 +3,26 @@ import { ComponentType } from 'react'
 import Taro, { Component, Config } from '@tarojs/taro'
 import { View, Text, ScrollView } from '@tarojs/components'
 import { AtTabBar, AtMessage } from 'taro-ui'
-import { observer, inject } from '@tarojs/mobx'
+import Mpaudio from './audio'
 
 import contentsEn from '../../config/contentsEn'
 import contentsCn from '../../config/contentsCn'
+import './index.scss'
 
 const booksEn = {}
 const booksCn = {}
 
-import './index.sass'
-
-@inject('counterStore')
-@observer
 class Index extends Component <any, any>{
 
   constructor (props) {
     super (props)
     this.state = {
-      chapters: {},
+      // chapters: {},
       chapter: 1,
       language: 1,
-      isnull: false,
+      time: 0,
+      duration: 0,
+      // isnull: false,
     }
   }
 
@@ -31,14 +30,19 @@ class Index extends Component <any, any>{
     navigationBarTitleText: 'chapters'
   }
 
+  // eslint-disable-next-line
+  innerAudioContext = wx.createInnerAudioContext()
+
+  audioInterval
+
   getBook = () => {
     return [
       {
-        path: 'english',
+        path: 'en',
         name: contentsEn[this.$router.params.bookIndex || 0].name,
       },
       {
-        path: 'chinese',
+        path: 'cn',
         name: contentsCn[this.$router.params.bookIndex || 0].name
       }
     ]
@@ -47,30 +51,25 @@ class Index extends Component <any, any>{
   componentWillMount () {
     Promise.all(this.getBook().map((book) => {
       return new Promise((resolve) => {
-        const cacheBook = book.path === 'english' ? booksEn[book.name] : booksCn[book.name]
+        const cacheBook = book.path === 'en' ? booksEn[book.name] : booksCn[book.name]
         if (cacheBook) {
           resolve(true)
           return
         }
         Taro.request({
           method: 'GET',
-          url: `https://assets.dianwoda.cn/enochjs/books/bible/${book.path}/${book.name}.js`
+          // url: `https://assets.dianwoda.cn/enochjs/books/bible/.js`
+          url: `https://enochjs.oss-cn-hangzhou.aliyuncs.com/bible/${book.path}/${book.name}.js`
         }).then(result => {
-          book.path === 'english' ? booksEn[book.name] = result.data : booksCn[book.name] = result.data
+          book.path === 'en' ? booksEn[book.name] = result.data : booksCn[book.name] = result.data
           resolve(true)
         })
       })
 
     })).then(() => {
-      const bookNameCn = contentsCn[this.$router.params.bookIndex || 0].name
       const chapter = +this.$router.params.chapter
-      const articleCn = booksCn[bookNameCn] ? booksCn[bookNameCn][`${bookNameCn}-${chapter}`] : []
-      const bookNameEn = contentsEn[this.$router.params.bookIndex || 0].name
-      const articleEn = booksEn[bookNameEn] ? booksEn[bookNameEn][`${bookNameEn}-${chapter}`] : []
       this.setState({
         chapter,
-        articleCn,
-        articleEn,
         touchX: '',
         touchY: '',
       })
@@ -100,8 +99,8 @@ class Index extends Component <any, any>{
     if (endTime - this.state.startTime > 500) {
       return
     }
-    let x = e.changedTouches[0].clientX;
-    let y = e.changedTouches[0].clientY;
+    const x = e.changedTouches[0].clientX;
+    const y = e.changedTouches[0].clientY;
     this.JudgeTouchData(x, y, this.state.touchX, this.state.touchY)
   }
 
@@ -116,7 +115,7 @@ class Index extends Component <any, any>{
     } 
     this.setState({
       chapter: this.state.chapter - 1,
-      isnull: false,
+      // isnull: false,
     }, () => {
       Taro.setNavigationBarTitle({ title: `chapter${this.state.chapter}` })
     })
@@ -134,10 +133,39 @@ class Index extends Component <any, any>{
     }
     this.setState({
       chapter: this.state.chapter + 1,
-      isnull: false,
+      // isnull: false,
     }, () => {
       Taro.setNavigationBarTitle({ title: `chapter${this.state.chapter}` })
     })
+  }
+
+  sliderTime = () => {
+    clearInterval(this.audioInterval)
+    this.audioInterval = setInterval(() => {
+      this.setState({time: this.state.time + 1})
+    }, 1000)
+  }
+
+  handlePlay = () => {
+    if (this.state.duration) {
+      this.innerAudioContext.play()
+      this.sliderTime()
+    } else {
+      this.innerAudioContext.autoplay = true
+      this.innerAudioContext.src = 'http://jiaoxue.jidujiao.com/mp3/%E5%88%9B%E4%B8%96%E8%AE%B0/%E5%88%9B%E4%B8%96%E8%AE%B0%E7%AC%AC1%E7%AB%A0.mp3'
+      this.innerAudioContext.onPlay(() => {
+        this.sliderTime()
+      })
+      this.innerAudioContext.onTimeUpdate(() => {
+        this.state.duration === 0 && this.innerAudioContext.duration !== 0 && this.setState({
+          duration: this.innerAudioContext.duration,
+        })
+      })
+      this.innerAudioContext.onError((res) => {
+        console.log(res.errMsg)
+        console.log(res.errCode)
+      })
+    }
   }
 
   JudgeTouchData = (endX, endY, startX, startY) => {
@@ -151,14 +179,35 @@ class Index extends Component <any, any>{
     }
   }
 
+  handlePause = () => {
+    clearInterval(this.audioInterval)
+    this.innerAudioContext.pause()
+  }
+
+  handleTimeChange = (value) => {
+    this.setState({
+      time: value
+    }, () => {
+      this.innerAudioContext.seek(value)
+      this.sliderTime()
+    })
+  }
+
+  handleTimeFormatter = (value) => {
+    const minute = Math.floor(value / 60)
+    const second = parseInt(value, 10) % 60
+    return `${minute < 10 ? '0' + minute : minute}:${second < 10 ? '0' + second : second }`
+  }
+
   render () {
     const languages = [{ title: '英文' }, { title: '中文' }, { title: '中英' }]
     const bookNameCn = contentsCn[this.$router.params.bookIndex || 0].name
     const bookNameEn = contentsEn[this.$router.params.bookIndex || 0].name
     const bookEn = booksEn[bookNameEn] || {}
     const bookCn = booksCn[bookNameCn] || {}
+    console.log('.....time', this.state.time)
     return (
-      <View className="book-detail">
+      <View className='book-detail'>
         {
           Object.keys(bookEn).map((chapter, chapterIndex) => {
             const show = chapterIndex + 1 === this.state.chapter
@@ -175,7 +224,7 @@ class Index extends Component <any, any>{
                     return <View key={bookNameEn + index.toString()} className='at-article__p'>
                       {
                         this.state.language !== 1?
-                          <Text selectable={true} className="c-desc" >
+                          <Text selectable className='c-desc'>
                             {item}
                           </Text>
                           : null
@@ -183,7 +232,7 @@ class Index extends Component <any, any>{
                       {
                         this.state.language !== 0 ?
                           <View>
-                            <Text selectable={true} className="c-desc" >
+                            <Text selectable className='c-desc'>
                               {bookCn[`${bookNameCn}-${chapterIndex + 1}`][index]}
                             </Text>
                           </View>: null
@@ -195,9 +244,9 @@ class Index extends Component <any, any>{
           })
         }
         <AtMessage />
+        <Mpaudio bookNameCn={bookNameCn} bookNameEn={bookNameEn} chapterIndex={this.state.chapter} />
         <AtTabBar
-          className="book-tab-bar"
-          fixed
+          className='book-tab-bar'
           current={this.state.language}
           tabList={languages}
           onClick={this.handleTabsClick.bind(this, 'language')}
